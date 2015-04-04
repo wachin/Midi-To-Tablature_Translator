@@ -1,0 +1,28 @@
+To do for the Main translation class:
+	1) Read the MIDI library to find isolated drums
+		- Isolate each frequency of drum pieces
+	2) Set pace of ticks
+	3) In text file: 
+		- Use (-) to count "unused" tick
+		- In instance of drum piece struck ("used") apply appropriate character
+			- 'x' is a normally struck cymbal(C1..C2..C3)/closed High hat(HH)
+			- 'X' is a ride bell (RD)/ open High Hat (HH)
+			- 'f' is a flam on toms (T1..T2..T3..)/Snare(S)/
+			- 'o' is a normal strike on a drum toms/snare/bass (B)
+			- 'O' is an accented drum strike, ie rim shot
+			- 'g' is a ghost note on a drum
+		- Maybe start with just C/HH/S/B
+
+	4) Check for new frequencies, if is new run addNewPiece(): Which opens a new line for writing
+	
+	5) Maybe eventually add time signatures throughout?
+
+
+HH---x---x---x---x---x---x---x---x
+ S-------o-------o-------o-------o
+ B---o-------o-------o-------o----
+ C--------x-------x-------x-------
+
+Check line length. Tick lenght > x then \n
+
+
