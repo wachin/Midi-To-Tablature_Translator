@@ -1,3 +1,21 @@
+----------------------------------New notes--------------------------------------------
+
+1) gotta figure out haskell pkg/lib import stuff...cabal etc
+
+main - 
+* get args -> return path to midi or error for invalid path
+* begin reading midi via given path -> bpm? bps? ticks? etc
+* read midi -> update text variables? something like this
+** maybe loop on this
+    ---either we update the notation as we process the midi file---
+                ---or---
+    ---we process the whole midi file, store the info, then output notation---
+* finish outputting notation
+* end
+
+
+----------------------------------Old notes--------------------------------------------
+
 To do for the Main translation class:
 	1) Read the MIDI library to find isolated drums
 		- Isolate each frequency of drum pieces

@@ -1,10 +1,8 @@
-Current state of the project (4/4/15):
+Current state of the project (9/3/15):
+Re-writing this buddy in Haskell. Let's do it!
+
+State of the project (4/4/15):
 BROKEN - was in the middle of refactoring a few months ago
-
-I should rewrite this from scratch using the c++ midi library..might work a bit better.
-
-
-
 
 For now I would run it strictly out of the command line (I've had problems porting it over to eclipse or some other IDE)
 
