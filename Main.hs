@@ -1,13 +1,14 @@
 -- Entry point for Midi-To-Tablature executable
 
 import MidiParser
-import NotationRuler
+import NotationFormatter
+import NotationWriter
 
-main = do processArguments  -- Can do that in here
-        . getGeneralInfo    -- in MidiParser
-        . getDrumTrack      -- in MidiParser
-        . processDrumTrack  -- in MidiParser
-        . outputNotation    -- in NotationRuler
+main = do 
+    (inF,outF) <- processArguments      -- Can do that in here
+    maybeTempF <- parseMidiIntoTemp inf -- in MidiParser
+    formatData maybeTempF               -- in NotationFormatter
+    outputNotation                      -- in NotationWriter
 
 
 
