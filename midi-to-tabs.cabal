@@ -17,8 +17,9 @@ extra-source-files:  README.txt
 cabal-version:       >=1.10
 
 executable midi-to-tabs
-  main-is:             Test.hs
-  -- other-modules:       
+  main-is:             Main.hs
+  other-modules:       NotationWriter,
+                       MidiParser
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9, midi
   -- hs-source-dirs:      
