@@ -17,7 +17,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/bin"
-libdir     = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/lib/x86_64-linux-ghc-7.10.2/midi-to-tabs-0.1.0.0-5ho4ds1QqZp28qZ1IgQufQ"
+libdir     = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/lib/x86_64-linux-ghc-7.10.2/midi-to-tabs-0.1.0.0-JuyTRfZP6RX9w9X1JZgCzJ"
 datadir    = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/share/x86_64-linux-ghc-7.10.2/midi-to-tabs-0.1.0.0"
 libexecdir = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/libexec"
 sysconfdir = "/home/zack/Github/Midi-To-Tablature_Translator/.cabal-sandbox/etc"

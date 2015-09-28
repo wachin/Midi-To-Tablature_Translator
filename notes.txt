@@ -1,17 +1,10 @@
 ----------------------------------New notes--------------------------------------------
 
-1) gotta figure out haskell pkg/lib import stuff...cabal etc
-
-main - 
-* get args -> return path to midi or error for invalid path
-* begin reading midi via given path -> 
-** bpm? bps? ticks? etc
-** divide and identify requested tracks
-* read midi -> update text variables? something like this
-** maybe loop on this
-    ---we process the whole midi file, store the info, then output notation---
-* finish outputting notation
-* end
+Left to do:
+* Parse for drum track(s) in a smart way
+* Figure out best way to encode the ticks from ^ that/those tracks into tempFile
+* Decide whether to reformat in tempFile or just write to the outFile while parsing the tempFile
+* Make it clean and beautiful
 
 
 ----------------------------------Old notes--------------------------------------------

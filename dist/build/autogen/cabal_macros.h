@@ -7,6 +7,13 @@
   (major1) == 4 && (major2) <  8 || \
   (major1) == 4 && (major2) == 8 && (minor) <= 1)
 
+/* package event-list-0.1.1.2 */
+#define VERSION_event_list "0.1.1.2"
+#define MIN_VERSION_event_list(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  1 || \
+  (major1) == 0 && (major2) == 1 && (minor) <= 1)
+
 /* package midi-0.2.1.5 */
 #define VERSION_midi "0.2.1.5"
 #define MIN_VERSION_midi(major1,major2,minor) (\
@@ -91,5 +98,5 @@
   (major1) == 2 && (major2) <  24 || \
   (major1) == 2 && (major2) == 24 && (minor) <= 0)
 
-#define CURRENT_PACKAGE_KEY "midit_5ho4ds1QqZp28qZ1IgQufQ"
+#define CURRENT_PACKAGE_KEY "midit_JuyTRfZP6RX9w9X1JZgCzJ"
 
