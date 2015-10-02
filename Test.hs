@@ -14,16 +14,42 @@ import Sound.MIDI.Message.Channel.Voice
 import Sound.MIDI.Message.Channel.Mode
 import Data.List
 import qualified Data.EventList.Relative.TimeBody as EL
+import Control.Exception
 
 f = "samples/SearchAndDestroy.mid"
+l = "samples/Loser.mid"
 
-main = do
+sad = do
     bigT   <- fromFile f 
- --   putStrLn "There are " ++ (show length ts) ++ "tracks in the song\n"
---    ds <- findDrums ts []
---    return (head ds)
-    return (F.getTracks bigT)
+    return (bigT)
 
+loser = do 
+    bigT   <- fromFile l
+    return bigT
+
+-- A setTempo MetaEvent is in MS per quarter note
+-- This translates it to BPM
+tempoToBPM t = round $ msPerMinute `div` t
+    where msPerMinute = 60000000
+
+
+handleDrumsAndGuitars ts =  let drumTracks = findDrums ts
+                                guitarTracks = findGuitars ts 
+                            in  if (null drumTracks) && (null guitarTracks)
+                                then error "\tThe .mid file given is malformed, and/or doesn't define instruments\n" ++
+                                           "\tThis program will not work with the given MIDI file. Sorry!\n"
+                                else do handleDrums drumTracks
+                                        handleGuitars guitarTracks
+
+handleDrums ds = undefined
+
+handleGuitars gs = undefined
+
+hasMidi t = case EL.getBodies $ EL.filter isMidi t of
+                []  -> False
+                _   -> True
+
+--------------Already added-------------------------
 
 findDrums ts = filter isDrum ts
     where isDrum t = ("Drum" `isInfixOf'` getTrackName t) ||
@@ -48,10 +74,9 @@ getInstrumentName t = case EL.getBodies $ EL.filter isIN t of
 isInfixOf' pat (Just s)     = pat `isInfixOf` s
 isInfixOf' pat (Nothing)    = False
 
-getTPQN (F.Cons _ d@(F.Ticks t) _)   = F.fromTempo $ F.ticksPerQuarterNote d
---getTPQN (F.Cons _ (F.SMPTE d d') _)   = 
 
 --getET (EL.Cons tm bd)   = tm
+
 
 isMidi (MIDIEvent e)    = True
 isMidi _                = False
@@ -78,12 +103,6 @@ getTN _             = error "Not a trackname meta event"
 fromMeta (MetaEvent e)  = e
 fromMeta _              = error "Not a meta event"
 
---Probably don't need
-mapTrack :: (F.Track -> F.Track) -> F.T -> F.T
-mapTrack f (F.Cons mfType division tracks) =
-   F.Cons mfType division (map f tracks)
-
---getT 
 
 -- This isn't right yet, but it's close
 {-

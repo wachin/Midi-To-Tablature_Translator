@@ -21,6 +21,13 @@
   (major1) == 0 && (major2) <  2 || \
   (major1) == 0 && (major2) == 2 && (minor) <= 1)
 
+/* package mtl-2.2.1 */
+#define VERSION_mtl "2.2.1"
+#define MIN_VERSION_mtl(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  2 || \
+  (major1) == 2 && (major2) == 2 && (minor) <= 1)
+
 /* tool cpphs-1.19.3 */
 #define TOOL_VERSION_cpphs "1.19.3"
 #define MIN_TOOL_VERSION_cpphs(major1,major2,minor) (\
@@ -98,5 +105,5 @@
   (major1) == 2 && (major2) <  24 || \
   (major1) == 2 && (major2) == 24 && (minor) <= 0)
 
-#define CURRENT_PACKAGE_KEY "midit_JuyTRfZP6RX9w9X1JZgCzJ"
+#define CURRENT_PACKAGE_KEY "midit_7nMm4su1SdKIeyNHZ7diD6"
 

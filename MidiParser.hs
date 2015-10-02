@@ -1,8 +1,7 @@
 -- Responsible for all the functions that dissect and 
 -- reason about the midi file
 
-module MidiParser (parseMidiIntoTemp, getGeneralInfo, getDrumTracks
-                  , processDrumTracks, getGuitarTracks, processGuitarTracks, getTPQN) where
+module MidiParser (parseMidiIntoTemp) where 
 
 import System.IO
 import System.Directory(getTemporaryDirectory,removeFile)
@@ -17,6 +16,7 @@ import Sound.MIDI.Message.Channel.Mode
 import Data.List
 import qualified Data.EventList.Relative.TimeBody as EL
 
+
 parseMidiIntoTemp inFile = do
     tempDir <- catch (getTemporaryDirectory) 
                      (\e -> do
@@ -28,40 +28,52 @@ parseMidiIntoTemp inFile = do
                 removeFile tempFile
                 return ())
 
-doParse inFile tempFile tempHandle = undefined --getGeneralInfo . getDrumTracks . processDrumTracks
+doParse inFile tempFile tempHandle = do processGeneralInfo inFile tempFile tempHandle 
+                                        processDrumsAndGuitars inFile tempFile tempHandle 
 
 getGeneralInfo = undefined
 
-processDrumTracks = undefined
+processDrumTracks ds = undefined
 
-processGuitarTracks = undefined
+processGuitarTracks gs = undefined
 
 {- Functions on finding general information about
  - the MIDI, tempo, title, etc
  -}
 
-getTPQN (F.Cons _ d@(F.Ticks t) _)   = F.fromTempo $ F.ticksPerQuarterNote d
---TODO: figure out wat SMPTE getTPQN (F.Cons _ (F.SMPTE d d') _)   = 
+tempoToBPM t = round $ msPerMinute `div` t
+    where msPerMinute = 60000000
 
 --TODO: how to -> getET (EL.Cons tm bd)   = tm
 
 
+{- Functions on processing the instrument tracks
+ - and recording them into temp files
+ -}
+
+processDrumsAndGuitars ts = let drumTracks = getDrumTracks ts
+                                guitarTracks = getGuitarTracks ts 
+                            in if (null drumTracks) && (null guitarTracks)
+                               then error "\tThe .mid file given is malformed, and/or doesn't define instruments\n" ++
+                                          "\tThis program will not work with the given MIDI file. Sorry!\n"
+                               else do processDrumsTracks drumTracks
+                                       processGuitarsTracks guitarTracks
 
 {- Functions on isolating the separate instruments' tracks
- - in order to process them individually into their temp files 
+ - in order to process them 
  -}
 
 getDrumTracks ts = filter isDrum ts
-    where isDrum t = ("Drum" `isInfixOf'` getTrackName t) ||
-                     ("Drum" `isInfixOf'` getInstrumentName t) ||
-                     ("drum" `isInfixOf'` getTrackName t) ||
-                     ("drum" `isInfixOf'` getInstrumentName t)
+    where isDrum t = ("Drum" `isInfixOfM` getTrackName t) ||
+                     ("Drum" `isInfixOfM` getInstrumentName t) ||
+                     ("drum" `isInfixOfM` getTrackName t) ||
+                     ("drum" `isInfixOfM` getInstrumentName t)
 
 getGuitarTracks ts = filter isGuitar ts
-    where isGuitar t = ("Guitar" `isInfixOf'` getTrackName t) ||
-                       ("Guitar" `isInfixOf'` getInstrumentName t) ||
-                       ("guitar" `isInfixOf'` getTrackName t) ||
-                       ("guitar" `isInfixOf'` getInstrumentName t)
+    where isGuitar t = ("Guitar" `isInfixOfM` getTrackName t) ||
+                       ("Guitar" `isInfixOfM` getInstrumentName t) ||
+                       ("guitar" `isInfixOfM` getTrackName t) ||
+                       ("guitar" `isInfixOfM` getInstrumentName t)
 
 getTrackName t = case EL.getBodies $ EL.filter isTN t of
                     (x:[])  -> Just $ getTN $ fromMeta x
@@ -71,8 +83,8 @@ getInstrumentName t = case EL.getBodies $ EL.filter isIN t of
                         (x:[])  -> Just $ getIN $ fromMeta x
                         _       -> Nothing
 
-isInfixOf' pat (Just s)     = pat `isInfixOf` s
-isInfixOf' pat (Nothing)    = False
+isInfixOfM pat (Just s)     = pat `isInfixOf` s
+isInfixOfM pat (Nothing)    = False
 
 isMidi (MIDIEvent e)    = True
 isMidi _                = False

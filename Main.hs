@@ -16,8 +16,8 @@ processArguments = do
     let isCorrectLength xs = length xs == 2 in
         if isCorrectLength args 
         then let h = head args
-                 s = head $ tail args in
-                    return (h,s)
+                 s = head $ tail args
+             in return (h,s)
         else error ("\n ----- Incorrect Argument Format for MidiTranslator -----\n" ++
                    "Arguments must be of the form:\n\n" ++
                    "\t.\\midi-to-tabs path\\to\\midi-file path\\to\\desired\\output-file\n\n" ++

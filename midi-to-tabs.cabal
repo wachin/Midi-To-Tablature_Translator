@@ -21,6 +21,6 @@ executable midi-to-tabs
   --other-modules:       NotationWriter,
   --                     MidiParser
   -- other-extensions:    
-  build-depends:       base >=4.8 && <4.9, midi, event-list
+  build-depends:       base >=4.8 && <4.9, midi, event-list, mtl
   -- hs-source-dirs:      
   default-language:    Haskell2010
