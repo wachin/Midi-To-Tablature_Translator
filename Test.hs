@@ -4,7 +4,7 @@
  - of the MIDI API
  -}
 
-
+import System.IO
 import qualified Sound.MIDI.File as F
 import Sound.MIDI.File.Load
 import Sound.MIDI.File.Event
@@ -14,24 +14,77 @@ import Sound.MIDI.Message.Channel.Voice
 import Sound.MIDI.Message.Channel.Mode
 import Data.List
 import qualified Data.EventList.Relative.TimeBody as EL
-import Control.Exception
 
-f = "samples/SearchAndDestroy.mid"
-l = "samples/Loser.mid"
+--processGeneralInfo htrk temph = EL.traverse_ (writeTime temph . calcTime) (writeBody temph) htrk 
 
-sad = do
-    bigT   <- fromFile f 
-    return (bigT)
 
-loser = do 
-    bigT   <- fromFile l
-    return bigT
+-- I think I need a way to carry the last calculated time (or accumulate the times) 
+-- In order for this to work 
+{-
+calcTime t 
+    | t >= 3600000  = let h = t / 360000 
+                          m = in (round t', 
+    | t >= 60000    =
+    | otherwise     =
+                            
+                    = 
+-}
+
+writeTime han (h,m,s) = do
+                        hPutStr han (show h ++ ":" ++ show m ++ ":" ++ show s)
+
+-- This isn't right yet, but it's close
+{-
+getNoteLength n p   =   let isSameNote  = (== "Note On") || np == p 
+                            np          = getNewPitch
+                        in  (n, (length . takeWhile (isSameNote)) 
+
+getNewPitch = undefined
+-}
+
+--------------Already added-------------------------
 
 -- A setTempo MetaEvent is in MS per quarter note
 -- This translates it to BPM
 tempoToBPM t = round $ msPerMinute `div` t
     where msPerMinute = 60000000
 
+getUniqueVelocities trk = nub $ getVelocities trk
+
+getVelocities trk = map (fromVelocity . fromNoteOnEventGetVelocity) nes
+    where nes = EL.getBodies $ EL.filter fromEventIsNoteOn trk
+
+getUniquePitches trk = nub $ getPitches trk
+
+getPitches trk = map (fromPitch . fromNoteOnEventGetPitch) nes
+    where nes = EL.getBodies $ EL.filter fromEventIsNoteOn trk
+
+hasMidi t = case EL.getBodies $ EL.filter isMidi t of
+                []  -> False
+                _   -> True
+
+getMidiMessageBody (MIDIEvent (Cons c b)) = b
+getMidiMessageBody _          = error "given malformed MIDI message"
+
+isVoice (Voice _) = True
+isVoice _         = False
+
+getVoiceMessage (Voice m) = m
+getVoiceMessage _         = error "not a voice message"
+
+fromEventIsNoteOn e = if (isMidi e) && (isVoice $ v) then isNoteOn n else False
+    where v = getMidiMessageBody e
+          n = getVoiceMessage v  
+
+fromNoteOnEventGetPitch (MIDIEvent (Cons c (Voice (NoteOn p v)))) = p
+
+fromNoteOnEventGetVelocity (MIDIEvent (Cons c (Voice (NoteOn p v)))) = v
+
+isMode (Mode _) = True
+isMode _        = False
+
+getModeMessage (Mode m) = m
+getModeMessage _        = error "not a mode message"
 
 handleDrumsAndGuitars ts =  let drumTracks = findDrums ts
                                 guitarTracks = findGuitars ts 
@@ -45,23 +98,25 @@ handleDrums ds = undefined
 
 handleGuitars gs = undefined
 
-hasMidi t = case EL.getBodies $ EL.filter isMidi t of
-                []  -> False
-                _   -> True
-
---------------Already added-------------------------
-
 findDrums ts = filter isDrum ts
-    where isDrum t = ("Drum" `isInfixOf'` getTrackName t) ||
-                     ("Drum" `isInfixOf'` getInstrumentName t) ||
-                     ("drum" `isInfixOf'` getTrackName t) ||
-                     ("drum" `isInfixOf'` getInstrumentName t)
+    where isDrum t = ("Dru" `isInfixOf'` getTrackName t) ||
+                     ("Dru" `isInfixOf'` getInstrumentName t) ||
+                     ("dru" `isInfixOf'` getTrackName t) ||
+                     ("dru" `isInfixOf'` getInstrumentName t) ||
+                     ("Perc" `isInfixOf'` getTrackName t) ||
+                     ("Perc" `isInfixOf'` getInstrumentName t) ||
+                     ("perc" `isInfixOf'` getTrackName t) ||
+                     ("perc" `isInfixOf'` getInstrumentName t) 
 
 findGuitars ts = filter isGuitar ts
-    where isGuitar t = ("Guitar" `isInfixOf'` getTrackName t) ||
-                       ("Guitar" `isInfixOf'` getInstrumentName t) ||
-                       ("guitar" `isInfixOf'` getTrackName t) ||
-                       ("guitar" `isInfixOf'` getInstrumentName t)
+    where isGuitar t = ("Guit" `isInfixOf'` getTrackName t) ||
+                       ("Guit" `isInfixOf'` getInstrumentName t) ||
+                       ("guit" `isInfixOf'` getTrackName t) ||
+                       ("guit" `isInfixOf'` getInstrumentName t) ||
+                       ("gtr" `isInfixOf'` getTrackName t) ||
+                       ("gtr" `isInfixOf'` getInstrumentName t) ||
+                       ("Gtr" `isInfixOf'` getTrackName t) ||
+                       ("Gtr" `isInfixOf'` getInstrumentName t) 
 
 getTrackName t = case EL.getBodies $ EL.filter isTN t of
                     (x:[])  -> Just $ getTN $ fromMeta x
@@ -103,12 +158,33 @@ getTN _             = error "Not a trackname meta event"
 fromMeta (MetaEvent e)  = e
 fromMeta _              = error "Not a meta event"
 
+f = "samples/SearchAndDestroy.mid"
+l = "samples/Loser.mid"
+d = "samples/1dru2gui.mid"
+d' = "samples/rooster.mid"
+d'' = "samples/zombie.mid"
+f' = "samples/Hakuna_Matata.mid"
 
--- This isn't right yet, but it's close
-{-
-getNoteLength n p   =   let isSameNote  = (== "Note On") || np == p 
-                            np          = getNewPitch
-                        in  (n, (length . takeWhile (isSameNote)) 
+dis = do
+    bigT   <- fromFile f'
+    return (F.getTracks bigT)
 
-getNewPitch = undefined
--}
+dg = do
+    bigT   <- fromFile d
+    return (F.getTracks bigT)
+
+roo = do
+    bigT   <- fromFile d'
+    return (F.getTracks bigT)
+
+zom = do
+    bigT   <- fromFile d''
+    return (F.getTracks bigT)
+
+sad = do
+    bigT   <- fromFile f 
+    return (F.getTracks bigT)
+
+los = do 
+    bigT   <- fromFile l
+    return (F.getTracks bigT)

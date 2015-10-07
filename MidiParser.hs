@@ -44,7 +44,42 @@ processGuitarTracks gs = undefined
 tempoToBPM t = round $ msPerMinute `div` t
     where msPerMinute = 60000000
 
---TODO: how to -> getET (EL.Cons tm bd)   = tm
+getUniqueVelocities trk = nub $ getVelocities trk
+
+getVelocities trk = map (fromVelocity . fromNoteOnEventGetVelocity) nes
+    where nes = EL.getBodies $ EL.filter fromEventIsNoteOn trk
+
+getUniquePitches trk = nub $ getPitches trk
+
+getPitches trk = map (fromPitch . fromNoteOnEventGetPitch) nes
+    where nes = EL.getBodies $ EL.filter fromEventIsNoteOn trk
+
+hasMidi t = case EL.getBodies $ EL.filter isMidi t of
+                []  -> False
+                _   -> True
+
+getMidiMessageBody (MIDIEvent (Cons c b)) = b
+getMidiMessageBody _          = error "given malformed MIDI message"
+
+isVoice (Voice _) = True
+isVoice _         = False
+
+getVoiceMessage (Voice m) = m
+getVoiceMessage _         = error "not a voice message"
+
+fromEventIsNoteOn e = if (isMidi e) && (isVoice $ v) then isNoteOn n else False
+    where v = getMidiMessageBody e
+          n = getVoiceMessage v  
+
+fromNoteOnEventGetPitch (MIDIEvent (Cons c (Voice (NoteOn p v)))) = p
+
+fromNoteOnEventGetVelocity (MIDIEvent (Cons c (Voice (NoteOn p v)))) = v
+
+isMode (Mode _) = True
+isMode _        = False
+
+getModeMessage (Mode m) = m
+getModeMessage _        = error "not a mode message"
 
 
 {- Functions on processing the instrument tracks
@@ -64,16 +99,24 @@ processDrumsAndGuitars ts = let drumTracks = getDrumTracks ts
  -}
 
 getDrumTracks ts = filter isDrum ts
-    where isDrum t = ("Drum" `isInfixOfM` getTrackName t) ||
-                     ("Drum" `isInfixOfM` getInstrumentName t) ||
-                     ("drum" `isInfixOfM` getTrackName t) ||
-                     ("drum" `isInfixOfM` getInstrumentName t)
+    where isDrum t = ("Dru" `isInfixOfM` getTrackName t) ||
+                     ("Dru" `isInfixOfM` getInstrumentName t) ||
+                     ("dru" `isInfixOfM` getTrackName t) ||
+                     ("dru" `isInfixOfM` getInstrumentName t) ||
+                     ("Perc" `isInfixOf'` getTrackName t) ||
+                     ("Perc" `isInfixOf'` getInstrumentName t) ||
+                     ("perc" `isInfixOf'` getTrackName t) ||
+                     ("perc" `isInfixOf'` getInstrumentName t) 
 
 getGuitarTracks ts = filter isGuitar ts
-    where isGuitar t = ("Guitar" `isInfixOfM` getTrackName t) ||
-                       ("Guitar" `isInfixOfM` getInstrumentName t) ||
-                       ("guitar" `isInfixOfM` getTrackName t) ||
-                       ("guitar" `isInfixOfM` getInstrumentName t)
+    where isGuitar t = ("Guit" `isInfixOfM` getTrackName t) ||
+                       ("Guit" `isInfixOfM` getInstrumentName t) ||
+                       ("guit" `isInfixOfM` getTrackName t) ||
+                       ("guit" `isInfixOfM` getInstrumentName t) ||
+                       ("gtr" `isInfixOfM` getTrackName t) ||
+                       ("gtr" `isInfixOfM` getInstrumentName t) ||
+                       ("Gtr" `isInfixOfM` getTrackName t) ||
+                       ("Gtr" `isInfixOfM` getInstrumentName t) 
 
 getTrackName t = case EL.getBodies $ EL.filter isTN t of
                     (x:[])  -> Just $ getTN $ fromMeta x
