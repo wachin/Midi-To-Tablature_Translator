@@ -1,0 +1,40 @@
+# Archivos de construcción de Cabal
+dist/
+dist-newstyle/
+cabal.project.local
+cabal.project.local~ 
+cabal.sandbox.config
+.log/
+
+# Archivos generados por GHC
+*.hi
+*.o
+*.dyn_hi
+*.dyn_o
+
+# Archivos generados por Stack
+.stack-work/
+
+# Archivos de respaldo y temporales
+*.bak
+*.swp
+*~
+
+# Archivos de configuración específicos del sistema
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.bin
+
+# Archivos generados por el ejecutable
+*.txt
+*.log
+*.out
+
+# Archivos binarios de compilación
+build/
+bin/
+
+# Configuración de editor
+*.tags

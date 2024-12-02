@@ -1,25 +1,17 @@
--- Entry point for Midi-To-Tablature executable
-
 import MidiParser
 import NotationWriter
 import System.Environment
 
-main = do 
-    (inFile,outFile) <- processArguments    -- Can do that in here
-    tempFile <- parseMidiIntoTemp inFile    -- in MidiParser
-    outputNotation tempFile outFile         -- in NotationWriter
-
--- processArguments is hardcoded to check for 2 arguments
--- from stdin
-processArguments = do 
+main :: IO ()
+main = do
     args <- getArgs
-    let isCorrectLength xs = length xs == 2 in
-        if isCorrectLength args 
-        then let h = head args
-                 s = head $ tail args
-             in return (h,s)
-        else error ("\n ----- Incorrect Argument Format for MidiTranslator -----\n" ++
-                   "Arguments must be of the form:\n\n" ++
-                   "\t.\\midi-to-tabs path\\to\\midi-file path\\to\\desired\\output-file\n\n" ++
-                   "Note: If the output file exists, it will be deleted.\n\n")
+    if length args /= 2
+        then putStrLn "Uso: midi-to-tabs <archivo MIDI> <archivo de salida>"
+        else do
+            let inFile = head args
+            let outFile = args !! 1
+            result <- parseMidiFile inFile
+            case result of
+                Left err -> putStrLn $ "Error al procesar el archivo MIDI: " ++ err
+                Right tab -> writeFile outFile tab >> putStrLn "Tablatura generada exitosamente."
 
