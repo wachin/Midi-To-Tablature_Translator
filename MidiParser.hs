@@ -1,10 +1,10 @@
 module MidiParser (parseMidiFile) where
 
 import qualified Sound.MIDI.File as MIDI
-import qualified Sound.MIDI.File.Event as Event
-import qualified Data.EventList.Relative.TimeBody as EventList
-import Data.Maybe (catMaybes)
-import Data.List (intercalate)
+import qualified Sound.MIDI.File.Track as Track
+import qualified Sound.MIDI.Message.Channel as Channel
+import qualified Sound.MIDI.Message.Channel.Voice as Voice
+import Data.Maybe (mapMaybe)
 
 -- Mapea notas MIDI a instrumentos de batería
 noteToInstrument :: Int -> Maybe String
@@ -19,42 +19,40 @@ noteToInstrument note = case note of
 -- Parsea un archivo MIDI y retorna la tablatura
 parseMidiFile :: FilePath -> IO (Either String String)
 parseMidiFile path = do
-    midiFile <- MIDI.load path
-    let tracks = MIDI.tracks $ MIDI.toFile midiFile
-    case filter isDrumTrack tracks of
-        [] -> return $ Left "No se encontró una pista de batería."
-        (drumTrack:_) -> return $ Right (processDrumTrack drumTrack)
+    result <- MIDI.fromFile path
+    case result of
+        Left err -> return $ Left ("Error al cargar el archivo MIDI: " ++ show err)
+        Right midi -> 
+            let tracks = MIDI.getTracks midi
+                drumTrack = findDrumTrack tracks
+            in case drumTrack of
+                Nothing -> return $ Left "No se encontró una pista de batería."
+                Just track -> return $ Right (processDrumTrack track)
 
--- Verifica si la pista contiene eventos de la batería (canal 10 en MIDI)
-isDrumTrack :: MIDI.Track Event.T -> Bool
-isDrumTrack = any isDrumEvent
+-- Encuentra la pista de batería (canal 10 en MIDI)
+findDrumTrack :: [Track.T] -> Maybe Track.T
+findDrumTrack = find isDrumTrack
+
+isDrumTrack :: Track.T -> Bool
+isDrumTrack track = any isDrumEvent (Track.toList track)
   where
-    isDrumEvent event = case Event.body event of
-        Event.MIDIEvent (Event.ChannelEvent (Event.VoiceEvent _ (Event.NoteOn note _))) ->
-            noteToInstrument note /= Nothing
+    isDrumEvent (time, event) = case event of
+        Channel.Voice (Voice.NoteOn _ _ _) -> True
         _ -> False
 
 -- Procesa la pista de batería y genera la tablatura
-processDrumTrack :: MIDI.Track Event.T -> String
-processDrumTrack track = 
-    let events = EventList.toPairList $ MIDI.events track
-        drumEvents = catMaybes $ map extractDrumEvent events
+processDrumTrack :: Track.T -> String
+processDrumTrack track =
+    let events = Track.toList track
+        drumEvents = mapMaybe extractDrumEvent events
     in formatTab drumEvents
 
 -- Extrae eventos de batería relevantes
-extractDrumEvent :: (Int, Event.T) -> Maybe (Int, String)
-extractDrumEvent (time, event) = case Event.body event of
-    Event.MIDIEvent (Event.ChannelEvent (Event.VoiceEvent _ (Event.NoteOn note _))) ->
-        case noteToInstrument note of
-            Just inst -> Just (time, inst)
-            Nothing -> Nothing
+extractDrumEvent :: (MIDI.Ticks, Channel.Message) -> Maybe String
+extractDrumEvent (_, event) = case event of
+    Channel.Voice (Voice.NoteOn pitch _) -> noteToInstrument pitch
     _ -> Nothing
 
 -- Formatea la salida de la tablatura
-formatTab :: [(Int, String)] -> String
-formatTab events = intercalate "\n" $ map formatLine groupedEvents
-  where
-    groupedEvents = groupByInstrument events
-    formatLine (instrument, hits) = instrument ++ ": " ++ concatMap showHit hits
-
-    showHit time = if time `mod` 480 == 0 then "o" else "-"
+formatTab :: [String] -> String
+formatTab events = unlines events
